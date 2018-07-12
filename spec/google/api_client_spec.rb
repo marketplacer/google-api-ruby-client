@@ -52,6 +52,19 @@ shared_examples_for 'configurable user agent' do
     client.execute(:uri=>'https://www.google.com/', :connection => conn)
     conn.verify
   end
+
+  it 'should not transmit a User-Agent header containing newlines' do
+    conn = stub_connection do |stub|
+      stub.get('/') do |env|
+        headers = env[:request_headers]
+        expect(headers).to have_key('User-Agent')
+        expect(headers['User-Agent']).to match(/^[^\n\r]*$/)
+        [200, {}, ['']]
+      end
+    end
+    client.execute(:uri=>'https://www.google.com/', :connection => conn)
+    conn.verify
+  end
 end
 
 RSpec.describe Google::APIClient do
